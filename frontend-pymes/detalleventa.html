@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle de Ventas - Sistema PYMES</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Sistema de Gestión</h2>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="productos.html">Productos</a>
+        <a href="ventas.html">Ventas</a>
+        <a href="detalleventa.html">Detalle de Ventas</a>
+      </nav>
+      <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="header">
+        <h1>Detalle de Ventas</h1>
+        <div class="user-info">
+          <span id="userName"></span>
+          <span id="userEmail"></span>
+        </div>
+      </header>
+
+      <section class="content">
+        <h2>Agregar Detalle de Venta</h2>
+        <form id="formDetalle">
+          <input type="number" id="id_venta" placeholder="ID Venta" required>
+          <input type="number" id="id_producto" placeholder="ID Producto" required>
+          <input type="number" id="cantidad" placeholder="Cantidad" required>
+          <input type="number" id="subtotal" placeholder="Subtotal" required>
+          <button type="submit">Agregar Detalle</button>
+        </form>
+
+        <h2>Lista de Detalles</h2>
+        <table border="1" id="tablaDetalle">
+          <thead>
+            <tr><th>ID</th><th>Venta</th><th>Producto</th><th>Cantidad</th><th>Subtotal</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Verificar login
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      alert("Debes iniciar sesión primero");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userName").innerText = usuario.nombre;
+      document.getElementById("userEmail").innerText = usuario.correo;
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("usuario");
+      window.location.href = "login.html";
+    });
+
+    // Cargar detalles
+    function cargarDetalle() {
+      fetch("http://localhost:3000/detalleventa")
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#tablaDetalle tbody");
+          tbody.innerHTML = "";
+          data.forEach(d => {
+            tbody.innerHTML += `<tr>
+              <td>${d.id_detalle}</td>
+              <td>${d.id_venta}</td>
+              <td>${d.producto}</td>
+              <td>${d.cantidad}</td>
+              <td>${d.subtotal}</td>
+            </tr>`;
+          });
+        });
+    }
+
+    // Agregar detalle
+    document.getElementById("formDetalle").addEventListener("submit", e => {
+      e.preventDefault();
+      const detalle = {
+        id_venta: document.getElementById("id_venta").value,
+        id_producto: document.getElementById("id_producto").value,
+        cantidad: document.getElementById("cantidad").value,
+        subtotal: document.getElementById("subtotal").value
+      };
+      fetch("http://localhost:3000/detalleventa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(detalle)
+      }).then(() => cargarDetalle());
+    });
+
+    cargarDetalle();
+  </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Productos - Sistema PYMES</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Sistema de Gestión</h2>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="productos.html">Productos</a>
+        <a href="ventas.html">Ventas</a>
+        <a href="detalleventa.html">Detalle de Ventas</a>
+      </nav>
+      <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="header">
+        <h1>Productos</h1>
+        <div class="user-info">
+          <span id="userName"></span>
+          <span id="userEmail"></span>
+        </div>
+      </header>
+
+      <section class="content">
+        <h2>Gestión de Productos</h2>
+        <form id="formProducto">
+          <input type="text" id="nombreP" placeholder="Nombre">
+          <input type="number" id="precio" placeholder="Precio">
+          <input type="number" id="stock" placeholder="Stock">
+          <button type="submit">Agregar Producto</button>
+        </form>
+
+        <table border="1" id="tablaProductos">
+          <thead>
+            <tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Verificar login
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      alert("Debes iniciar sesión primero");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userName").innerText = usuario.nombre;
+      document.getElementById("userEmail").innerText = usuario.correo;
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("usuario");
+      window.location.href = "login.html";
+    });
+
+    // Cargar productos
+    function cargarProductos() {
+      fetch("http://localhost:3000/productos")
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#tablaProductos tbody");
+          tbody.innerHTML = "";
+          data.forEach(p => {
+            tbody.innerHTML += `<tr>
+              <td>${p.id_producto}</td>
+              <td>${p.nombre}</td>
+              <td>${p.precio}</td>
+              <td>${p.stock}</td>
+            </tr>`;
+          });
+        });
+    }
+
+    // Agregar producto
+    document.getElementById("formProducto").addEventListener("submit", e => {
+      e.preventDefault();
+      const producto = {
+        nombre: document.getElementById("nombreP").value,
+        precio: document.getElementById("precio").value,
+        stock: document.getElementById("stock").value
+      };
+      fetch("http://localhost:3000/productos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(producto)
+      }).then(() => cargarProductos());
+    });
+
+    cargarProductos();
+  </script>
+</body>
+</html>

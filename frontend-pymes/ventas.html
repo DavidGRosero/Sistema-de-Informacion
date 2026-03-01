@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas - Sistema PYMES</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>Sistema de Gestión</h2>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="productos.html">Productos</a>
+        <a href="ventas.html">Ventas</a>
+        <a href="detalleventa.html">Detalle de Ventas</a>
+      </nav>
+      <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="header">
+        <h1>Ventas</h1>
+        <div class="user-info">
+          <span id="userName"></span>
+          <span id="userEmail"></span>
+        </div>
+      </header>
+
+      <section class="content">
+        <h2>Registrar Venta</h2>
+        <form id="formVenta">
+          <input type="date" id="fecha" required>
+          <input type="number" id="id_cliente" placeholder="ID Cliente" required>
+          <input type="number" id="total" placeholder="Total" required>
+          <button type="submit">Registrar Venta</button>
+        </form>
+
+        <h2>Lista de Ventas</h2>
+        <table border="1" id="tablaVentas">
+          <thead>
+            <tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Verificar login
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      alert("Debes iniciar sesión primero");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userName").innerText = usuario.nombre;
+      document.getElementById("userEmail").innerText = usuario.correo;
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("usuario");
+      window.location.href = "login.html";
+    });
+
+    // Cargar ventas
+    function cargarVentas() {
+      fetch("http://localhost:3000/ventas")
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#tablaVentas tbody");
+          tbody.innerHTML = "";
+          data.forEach(v => {
+            tbody.innerHTML += `<tr>
+              <td>${v.id_venta}</td>
+              <td>${v.fecha}</td>
+              <td>${v.cliente}</td>
+              <td>${v.total}</td>
+            </tr>`;
+          });
+        });
+    }
+
+    // Registrar venta
+    document.getElementById("formVenta").addEventListener("submit", e => {
+      e.preventDefault();
+      const venta = {
+        fecha: document.getElementById("fecha").value,
+        id_cliente: document.getElementById("id_cliente").value,
+        total: document.getElementById("total").value
+      };
+      fetch("http://localhost:3000/ventas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(venta)
+      }).then(() => cargarVentas());
+    });
+
+    cargarVentas();
+  </script>
+</body>
+</html>

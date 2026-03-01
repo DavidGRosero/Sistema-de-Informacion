@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Sistema PYMES</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Sistema de Gestión</h2>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="productos.html">Productos</a>
+        <a href="ventas.html">Ventas</a>
+        <a href="detalleventa.html">Detalle de Ventas</a>
+      </nav>
+      <button class="logout" id="logoutBtn">Cerrar Sesión</button>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <h1>Dashboard</h1>
+        <div class="user-info">
+          <span id="userName"></span>
+          <span id="userEmail"></span>
+        </div>
+      </header>
+
+      <section class="metrics">
+        <div class="card fade-in">Total Clientes <br><strong id="totalClientes">0</strong></div>
+        <div class="card fade-in">Total Productos <br><strong id="totalProductos">0</strong></div>
+        <div class="card fade-in">Ventas Registradas <br><strong id="totalVentas">0</strong></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Verificar login
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario) {
+      alert("Debes iniciar sesión primero");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userName").innerText = usuario.nombre;
+      document.getElementById("userEmail").innerText = usuario.correo;
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("usuario");
+      window.location.href = "login.html";
+    });
+
+    // Cargar métricas desde el backend
+    async function cargarMetricas() {
+      try {
+        const clientes = await fetch("http://localhost:3000/clientes").then(r => r.json());
+        const productos = await fetch("http://localhost:3000/productos").then(r => r.json());
+        const ventas = await fetch("http://localhost:3000/ventas").then(r => r.json());
+
+        document.getElementById("totalClientes").innerText = clientes.length;
+        document.getElementById("totalProductos").innerText = productos.length;
+        document.getElementById("totalVentas").innerText = ventas.length;
+      } catch (err) {
+        console.error("Error cargando métricas:", err);
+      }
+    }
+
+    cargarMetricas();
+  </script>
+</body>
+</html>
