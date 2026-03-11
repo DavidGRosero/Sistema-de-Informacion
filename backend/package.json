@@ -1,14 +1,23 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Sistema de Información para la Gestión de Clientes y Productos en PYMES de Comercio Local",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "launch": "start http://localhost:3000 && node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "sistema",
+    "informacion",
+    "pymes",
+    "nodejs",
+    "express",
+    "supabase"
+  ],
+  "author": "David Alejandro Getial Rosero",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -16,5 +25,8 @@
     "express": "^5.2.1",
     "mysql2": "^3.18.2",
     "pg": "^8.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
