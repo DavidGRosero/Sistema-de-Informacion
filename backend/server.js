@@ -1,20 +1,21 @@
 const express = require("express");
 const { Pool } = require("pg");
 const cors = require("cors");
+const bcrypt = require("bcrypt"); // para encriptar contraseñas
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ================== CONEXIÓN A SUPABASE (Postgres) ==================
 const pool = new Pool({
-  host: "aws-1-us-east-1.pooler.supabase.com",   // ejemplo: db.abcd.supabase.co
-  user: "postgres.cupxithihgvvqjeshyos",              // usuario por defecto
-  password: "Davidgetial2005",          // la contraseña que definiste en Supabase
-  database: "postgres",          // nombre de la BD (por defecto es postgres)
+  host: "aws-1-us-east-1.pooler.supabase.com",
+  user: "postgres.cupxithihgvvqjeshyos",
+  password: "Davidgetial2005",
+  database: "postgres",
   port: 6543,
   ssl: { rejectUnauthorized: false }
 });
-
 
 // ================== CLIENTES ==================
 app.get("/clientes", async (req, res) => {
@@ -39,17 +40,14 @@ app.post("/clientes", async (req, res) => {
   }
 });
 
-// ================== ACTUALIZAR CLIENTE ==================
 app.put("/clientes/:id", async (req, res) => {
-  const { id } = req.params; // id del cliente en la URL
-  const { nombre, contacto, direccion } = req.body; // datos enviados en el body
-
+  const { id } = req.params;
+  const { nombre, contacto, direccion } = req.body;
   try {
     const result = await pool.query(
       "UPDATE clientes SET nombre = $1, contacto = $2, direccion = $3 WHERE id_cliente = $4 RETURNING *",
       [nombre, contacto, direccion, id]
     );
-
     if (result.rows.length > 0) {
       res.json({ message: "Cliente actualizado", cliente: result.rows[0] });
     } else {
@@ -83,19 +81,45 @@ app.post("/productos", async (req, res) => {
   }
 });
 
-// ================== USUARIOS (Login) ==================
+// ================== USUARIOS ==================
+// Registro de usuario nuevo
+app.post("/register", async (req, res) => {
+  console.log("Datos recibidos en /register:", req.body); // 👈 se verá en la terminal
+  try {
+    const hash = await bcrypt.hash(req.body.contraseña, 10);
+    const result = await pool.query(
+      "INSERT INTO usuarios (nombre, correo, contraseña, rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario",
+      [req.body.nombre, req.body.correo, hash, req.body.rol]
+    );
+    res.json({ message: "Usuario registrado exitosamente", id: result.rows[0].id_usuario });
+  } catch (err) {
+    console.error("Error en /register:", err); // 👈 muestra el error real en la terminal
+    res.status(500).json({ message: "Error al registrar usuario", error: err.message });
+  }
+});
+
+
+// Login de usuario
 app.post("/login", async (req, res) => {
   const { correo, contraseña } = req.body;
   try {
     const result = await pool.query(
-      "SELECT * FROM usuarios WHERE correo = $1 AND contraseña = $2",
-      [correo, contraseña]
+      "SELECT * FROM usuarios WHERE correo = $1",
+      [correo]
     );
-    if (result.rows.length > 0) {
-      res.json({ message: "Login exitoso", usuario: result.rows[0] });
-    } else {
-      res.json({ message: "Credenciales incorrectas" });
+
+    if (result.rows.length === 0) {
+      return res.json({ message: "Usuario no encontrado" });
     }
+
+    const usuario = result.rows[0];
+    const valido = await bcrypt.compare(contraseña, usuario.contraseña);
+
+    if (!valido) {
+      return res.json({ message: "Credenciales incorrectas" });
+    }
+
+    res.json({ message: "Login exitoso", usuario });
   } catch (err) {
     res.json({ error: err.message });
   }

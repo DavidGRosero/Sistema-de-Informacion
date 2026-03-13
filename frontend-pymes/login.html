@@ -7,7 +7,6 @@
 </head>
 <body class="login-body">
   <div class="login-box fade-in">
-    <!-- Imagen opcional arriba -->
     <img src="img/Icono.png" alt="Logo Sistema PYMES" style="max-width:100px; margin-bottom:15px;">
 
     <h2>Iniciar Sesión</h2>
@@ -16,6 +15,14 @@
       <input type="password" id="contraseña" placeholder="Contraseña" required>
       <button type="submit">Ingresar</button>
     </form>
+
+    <!-- Botón para ir al registro -->
+    <div style="margin-top:15px; text-align:center;">
+      <button type="button" onclick="window.location.href='register.html'">
+        Registrar Usuario Nuevo
+      </button>
+    </div>
+
     <div id="resultado"></div>
   </div>
 
@@ -35,9 +42,7 @@
       .then(res => res.json())
       .then(data => {
         if (data.message === "Login exitoso") {
-          // Guardar usuario en localStorage
           localStorage.setItem("usuario", JSON.stringify(data.usuario));
-          // Redirigir al dashboard
           window.location.href = "dashboard.html";
         } else {
           document.getElementById("resultado").innerText = "Credenciales incorrectas";

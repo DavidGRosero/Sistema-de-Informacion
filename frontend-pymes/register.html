@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Usuario - Sistema PYMES</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="login-body">
+  <div class="login-box fade-in">
+    <img src="img/Icono.png" alt="Logo Sistema PYMES" style="max-width:100px; margin-bottom:15px;">
+
+    <h2>Registrar Usuario</h2>
+    <form id="formRegister">
+      <input type="text" id="nombre" placeholder="Nombre" required>
+      <input type="email" id="correo" placeholder="Correo" required>
+      <input type="password" id="contraseña" placeholder="Contraseña" required>
+      <select id="rol" required>
+        <option value="Cliente">Cliente</option>
+        <option value="Administrador">Administrador</option>
+        <option value="Vendedor">Vendedor</option>
+      </select>
+      <button type="submit">Registrar</button>
+    </form>
+
+    <!-- Botón para volver al login -->
+    <div style="margin-top:15px; text-align:center;">
+      <button type="button" onclick="window.location.href='login.html'">
+        Volver al Login
+      </button>
+    </div>
+
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    document.getElementById("formRegister").addEventListener("submit", e => {
+      e.preventDefault();
+      const datos = {
+        nombre: document.getElementById("nombre").value,
+        correo: document.getElementById("correo").value,
+        contraseña: document.getElementById("contraseña").value,
+        rol: document.getElementById("rol").value
+      };
+
+      fetch("http://localhost:3000/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error("Error HTTP: " + res.status);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log("Respuesta del backend:", data);
+        document.getElementById("resultado").innerText = data.message || data.error;
+      })
+      .catch(err => {
+        console.error("Error en registro:", err);
+        document.getElementById("resultado").innerText = "Error de conexión con el servidor";
+      });
+    });
+  </script>
+</body>
+</html>
